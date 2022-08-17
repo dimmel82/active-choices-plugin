@@ -1,6 +1,8 @@
 work/
+.idea/
 target/
 test-output/
+.idea/
 .classpath
 .settings/
 .project

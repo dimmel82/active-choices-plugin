@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2020 Ioannis Moutsatsos, Bruno P. Kinoshita
+ * Copyright (c) 2014-2021 Ioannis Moutsatsos, Bruno P. Kinoshita
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -81,22 +81,23 @@ public class TestParametersXssVulnerabilities {
         project.save();
 
 
-        WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage configPage = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
-        DomNodeList<DomElement> nodes =
-            Objects.requireNonNull(Jenkins.getStoredVersion()).isNewerThanOrEqualTo(TRANSITION_TO_DIV_VERSION) ?
-                configPage.getElementsByTagName("div") : configPage.getElementsByTagName("td");
-        DomElement renderedParameterElement = null;
-        for (DomElement elem : nodes) {
-            if (elem.getAttribute("class").contains("setting-name")) {
-                renderedParameterElement = elem;
-                break;
+        try (WebClient wc = j.createWebClient()) {
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage configPage = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
+            DomNodeList<DomElement> nodes =
+                    Objects.requireNonNull(Jenkins.getStoredVersion()).isNewerThanOrEqualTo(TRANSITION_TO_DIV_VERSION) ?
+                            configPage.getElementsByTagName("div") : configPage.getElementsByTagName("td");
+            DomElement renderedParameterElement = null;
+            for (DomElement elem : nodes) {
+                if (elem.getAttribute("class").contains("setting-main")) {
+                    renderedParameterElement = elem;
+                    break;
+                }
             }
+            assertNotNull("Could not locate rendered parameter element", renderedParameterElement);
+            String renderedText = renderedParameterElement.getFirstChild().asXml();
+            assertNotEquals("XSS string was not escaped!", xssString, renderedText);
+            assertTrue("XSS string was not escaped!", renderedText.trim().contains("&amp;lt;img src=x onerror=alert(123)&amp;gt;"));
         }
-        assertNotNull("Could not locate rendered parameter element", renderedParameterElement);
-        String renderedText = renderedParameterElement.getFirstChild().asXml();
-        assertNotEquals("XSS string was not escaped!", xssString, renderedText);
-        assertEquals("XSS string was not escaped!", "&lt;img src=x onerror=alert(123)&gt;", renderedText.trim());
     }
 }

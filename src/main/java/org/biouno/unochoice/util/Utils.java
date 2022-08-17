@@ -60,9 +60,31 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.biouno.unochoice.AbstractUnoChoiceParameter;
+
+import hudson.model.Item;
+import hudson.model.Items;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Project;
+import hudson.security.ACL;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.tasks.BuildWrapper;
+import hudson.util.DescribableList;
+import hudson.util.ReflectionUtils;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 
 /**
  * Utility methods.
@@ -75,16 +97,6 @@ public class Utils {
     protected static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
     private Utils() {}
-
-    /**
-     * Returns all scriptler scripts available.
-     *
-     * @return all scriptler scripts available in Jenkins
-     */
-    public static @Nonnull Set<Script> getAllScriptlerScripts() {
-        final Set<Script> scripts = ScriptlerConfiguration.getConfiguration().getScripts();
-        return scripts;
-    }
 
     // --- methods called from Jelly pages
 

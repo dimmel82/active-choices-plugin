@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2020 Ioannis Moutsatsos, Bruno P. Kinoshita
+ * Copyright (c) 2014-2021 Ioannis Moutsatsos, Bruno P. Kinoshita
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -221,7 +221,7 @@ var UnoChoice = UnoChoice || (function($) {
                 if (_self.getFilterElement()) {
                     _self.getFilterElement().setOriginalArray(originalArray);
                 }
-            } else if (parameterElement.tagName === 'DIV') {
+            } else if (parameterElement.tagName === 'DIV' || parameterElement.tagName === 'SPAN') {
                 if (parameterElement.children.length > 0 && parameterElement.children[0].tagName === 'TABLE') {
                     var table = parameterElement.children[0];
                     var tbody = table.children[0];
@@ -355,7 +355,7 @@ var UnoChoice = UnoChoice || (function($) {
                      */
                     parameterElement.style.height = newValues.length > 10 ? '230px' : 'auto';
                 } // if (parameterElement.children.length > 0 && parameterElement.children[0].tagName === 'TABLE') {
-                if (parameterElement.children.length > 0 && parameterElement.children[0].tagName === 'DIV') {
+                if (parameterElement.children.length > 0 && (parameterElement.children[0].tagName === 'DIV' || parameterElement.children[0].tagName === 'SPAN')) {
                     var tbody = parameterElement.children[0];
                     jQuery(tbody).empty();
                     var originalArray = [];
@@ -687,7 +687,7 @@ var UnoChoice = UnoChoice || (function($) {
             for (var i = 0; i < options.length; ++i) {
                 this.originalArray.push(options[i]);
             }
-        } else if (paramElement.tagName === 'DIV') { // handle CHECKBOXES
+        } else if (paramElement.tagName === 'DIV' || paramElement.tagName === 'SPAN') { // handle CHECKBOXES
             if (jQuery(paramElement).children().length > 0 && paramElement.children[0].tagName === 'TABLE') {
                 var table = paramElement.children[0];
                 var tbody = table.children[0];
@@ -709,7 +709,7 @@ var UnoChoice = UnoChoice || (function($) {
                     }
                 }
             } // if (jQuery(paramElement).children().length > 0 && paramElement.children[0].tagName === 'TABLE') {
-            if (jQuery(paramElement).children().length > 0 && paramElement.children[0].tagName === 'DIV') {
+            if (jQuery(paramElement).children().length > 0 && (paramElement.children[0].tagName === 'DIV' || paramElement.children[0].tagName === 'SPAN')) {
                 var tbody = paramElement.children[0];
                 if (paramElement.className === 'dynamic_checkbox') {
                     var trs = jQuery(tbody).find('div');
@@ -799,7 +799,7 @@ var UnoChoice = UnoChoice || (function($) {
             var options = _self.originalArray;
             var newOptions = Array();
             for (var i = 0; i < options.length; i++) {
-                if (options[i].tagName === 'INPUT') {
+                if (typeof options[i] !== 'undefined' && options[i].tagName === 'INPUT' ) {
                     if (options[i].getAttribute('alt') && options[i].getAttribute('alt') !== options[i].value) {
                         if (options[i].getAttribute('alt').toLowerCase().match(text)) {
                             newOptions.push(options[i]);
@@ -810,7 +810,7 @@ var UnoChoice = UnoChoice || (function($) {
                         }
                     }
                 } else {
-                    if (options[i].innerHTML.toLowerCase().match(text)) {
+                    if (typeof options[i] !== 'undefined' && options[i].innerHTML.toLowerCase().match(text)) {
                         newOptions.push(options[i]);
                     }
                 }
@@ -824,7 +824,7 @@ var UnoChoice = UnoChoice || (function($) {
                    opt.innerHTML = newOptions[i].innerHTML;
                    jQuery(filteredElement).append(opt);
                }
-            } else if (tagName === 'DIV') { // handle CHECKBOXES, RADIOBOXES and other elements (Jenkins renders them as tables)
+            } else if (tagName === 'DIV' || tagName === 'SPAN') { // handle CHECKBOXES, RADIOBOXES and other elements (Jenkins renders them as tables)
                 if (jQuery(filteredElement).children().length > 0 && jQuery(filteredElement).children()[0].tagName === 'TABLE') {
                     var table = filteredElement.children[0];
                     var tbody = table.children[0];
@@ -915,7 +915,7 @@ var UnoChoice = UnoChoice || (function($) {
                         }
                     }
                 } // if (jQuery(filteredElement).children().length > 0 && jQuery(filteredElement).children()[0].tagName === 'TABLE') {
-                if (jQuery(filteredElement).children().length > 0 && jQuery(filteredElement).children()[0].tagName === 'DIV') {
+                if (jQuery(filteredElement).children().length > 0 && (jQuery(filteredElement).children()[0].tagName === 'DIV' || jQuery(filteredElement).children()[0].tagName === 'SPAN')) {
                     var tbody = filteredElement.children[0];
                     jQuery(tbody).empty();
                     if (filteredElement.className === 'dynamic_checkbox') {
@@ -1070,7 +1070,7 @@ var UnoChoice = UnoChoice || (function($) {
         var value = '';
         if (e.attr('name') === 'value') {
             value = getElementValue(htmlParameter);
-        }  else if (e.prop('tagName') === 'DIV') {
+        }  else if (e.prop('tagName') === 'DIV' || e.prop('tagName') === 'SPAN') {
             var subElements = e.find('[name="value"]');
             if (subElements) {
                 var valueBuffer = Array();
@@ -1087,6 +1087,8 @@ var UnoChoice = UnoChoice || (function($) {
                 var firstFile = filesList[0]; // ignoring other files... but we could use it...
                 value = firstFile.name;
             }
+        } else if (e.prop('tagName') === 'INPUT' && !['', 'name'].includes(e.attr('name'))) {
+            value = getElementValue(htmlParameter);
         }
         return value;
     }

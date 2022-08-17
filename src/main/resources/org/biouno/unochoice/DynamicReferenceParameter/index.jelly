@@ -1,7 +1,5 @@
 <?jelly escape-by-default='true' ?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-  xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-  xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   ${it.parameters.clear()}
   <st:adjunct includes="org.kohsuke.stapler.jquery"/>
   <st:adjunct includes="org.biouno.unochoice.stapler.unochoice"/>
@@ -73,7 +71,7 @@
     // find the cascade parameter element
     var parentDiv = jQuery('#${paramName}');
     // if the parameter class has been set to hidden, then we hide it now
-    if (parentDiv.get(0).getAttribute('class') == 'hidden_uno_choice_parameter') {
+    if (parentDiv.get(0).getAttribute('class') === 'hidden_uno_choice_parameter') {
       var parentTbody = jQuery(parentDiv.get(0)).parents('tbody');
       // FIXME: temporary fix to support both TABLE and DIV in the Jenkins UI
       //        remove after most users have migrated to newer versions with DIVs
@@ -87,7 +85,7 @@
     var parameterHtmlElement = null;
     for(var i = 0; i &lt; parentDiv.children().length; i++) {
         var child = parentDiv.children()[i];
-        if (child.getAttribute('name') == 'value' || child.id.indexOf('ecp_') &gt; -1) {
+        if (child.getAttribute('name') === 'value' || child.id.indexOf('ecp_') &gt; -1) {
             parameterHtmlElement = jQuery(child);
             break;
         }
@@ -105,7 +103,7 @@
         }
     }
     if (parameterHtmlElement &amp;&amp; parameterHtmlElement.get(0)) {
-        var dynamicParameter = new UnoChoice.DynamicReferenceParameter('${it.getName()}', parameterHtmlElement.get(0), dynamicReferenceParameter);
+        var dynamicParameter = new UnoChoice.DynamicReferenceParameter('${h.escape(it.getName())}', parameterHtmlElement.get(0), dynamicReferenceParameter);
         UnoChoice.cascadeParameters.push(dynamicParameter); // TODO review whether it is right or not to add a dynamic parameter here
         for (var i  = 0; i &lt; referencedParameters.length ; ++i) {
             var parameterElement = null;
@@ -114,14 +112,14 @@
             for (var j = 0; j &lt; divs.length ; j++) {
                 var div = divs[j];
                 var hiddenNames = jQuery(div).find('input[name="name"]');
-                if (hiddenNames[0].value == referencedParameters[i]) {
+                if (hiddenNames[0].value === referencedParameters[i]) {
                     var children = div.children;
                     for (var k = 0; k &lt; children.length; ++k) {
                         var child = children[k];
-                        if (child.getAttribute('name') == 'value') {
+                        if (child.getAttribute('name') === 'value') {
                             parameterElement = child;
                             break;
-                        } else if (child.tagName == 'DIV') {
+                        } else if (child.tagName === 'DIV' || child.tagName === 'SPAN') {
                             var subValues = jQuery(child).find('input[name="value"]');
                             if (subValues &amp;&amp; subValues.get(0)) {
                                 parameterElement = child;
@@ -130,7 +128,10 @@
                                 parameterElement = child;
                                 break;
                             }
-                        } else if (child.getAttribute('type') == 'file') {
+                        } else if (child.getAttribute('type') === 'file') {
+                            parameterElement = child;
+                            break;
+                        } else if (child.tagName === 'INPUT' &amp;&amp; !['', 'name'].includes(child.name)) {
                             parameterElement = child;
                             break;
                         }
@@ -142,10 +143,10 @@
         }
 
         // call update methods in Java passing the HTML values
-        console.log('Updating cascade of parameter [${it.getName()}] ...');
+        console.log('Updating cascade of parameter [${h.escape(it.getName())}] ...');
         dynamicParameter.update();
     } else {
-        console.log('Parameter error: Missing parameter [${paramName}] HTML element!');
+        console.log('Parameter error: Missing parameter [${h.escape(paramName)}] HTML element!');
     }
   </script>
 </j:jelly>
